@@ -15,24 +15,37 @@
 #include <stdarg.h>  /* For protos with va_list ie gmp_vprintf */
 #include <obstack.h> /* For struct obstack */
 
+static void generate_and_return_random_number(mpz_t *rand_num,
+                                               unsigned long int seed,
+                                               gmp_randstate_t *rand_state) {
+   gmp_randinit_default (*rand_state);
+   gmp_randseed_ui(*rand_state, seed);
+
+   mpz_init(*rand_num);
+
+   printf("Generated \"random\" number:\n");
+   gmp_randinit_default (*rand_state);
+   gmp_randseed_ui(*rand_state, seed);
+
+   mpz_init(*rand_num);
+
+   mpz_urandomb(*rand_num,*rand_state, 512);
+   gmp_printf("%Zd\n", *rand_num);
+
+   gmp_randclear(*rand_state);
+   mpz_clear(*rand_num);
+
+}
+
 int main() {
-   mpz_t rand_Num;
-   unsigned long int i, seed;
-   gmp_randstate_t r_state;
+   unsigned long int seed;
+   mpz_t rand_num;
+   gmp_randstate_t rand_state;
 
    seed = 123456;
 
-    gmp_randinit_default (r_state);
-    gmp_randseed_ui(r_state, seed);
+   generate_and_return_random_number(&rand_num, seed, &rand_state);
 
-    mpz_init(rand_Num);
 
-    for(i = 0; i < 10; ++i) {
-       mpz_urandomb(rand_Num,r_state, 2);
-       gmp_printf("%Zd\n", rand_Num);
-    }
-
-    gmp_randclear(r_state);
-    mpz_clear(rand_Num);
-    return 0;
+   return 0;
 }
