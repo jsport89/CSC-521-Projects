@@ -22,15 +22,12 @@ const mpz_t n3 = 157076644918362797910044266291328772777227484615850971281117203
 const mpz_t n4 = 20206959438259854707096595471756105531930316075003167441731682706437219837341080908001111386293866032342626326848774263655678734593467631039894350313079615694852898024651578877719067806299113646594515472905349384536141736001255892484345636015474986800809610322697749058964984183679288924809293079735255754321;
 const mpz_t n5 = 29824288303830669783641470318274489446681455929555569506212122576585040522591135570183377808244939609277778037167531249368105830574116003529097192484725011003242620065129581649476948641802290844900777295888790511736032138377077257780102810765337767474301386906507194607400736153806431242852566523065854979187;
 */
-static void generate_random_number(mpz_t *rand_num,
-                                               unsigned long int seed,
-                                               gmp_randstate_t *rand_state);
+static void generate_random_number(mpz_t *rand_num, unsigned long int seed);
 static int gcd_small_ints(int num1, int num2);
 
 int main() {
   unsigned long int seed, seed2;
   mpz_t rand_num, rand_num2, rand_num3;
-  gmp_randstate_t rand_state, rand_state2;
   //  mpz_t rand_num2;
   //  gmp_randstate_t rand_state2;
   seed = 654321;
@@ -43,9 +40,10 @@ int main() {
   * 1. Generates a pseudo 512-bit integer
   */
   printf("Part 1:\n");
-  generate_random_number(&rand_num, seed, &rand_state);
-  generate_random_number(&rand_num2, seed2, &rand_state2);
-
+  generate_random_number(&rand_num, seed);
+  generate_random_number(&rand_num2, seed2);
+  gmp_printf("Result: %Zd\n\n\n", rand_num);
+  gmp_printf("Result: %Zd\n\n\n", rand_num2);
   /*
   * 2. Checking to see if that integer is (probabilistically) prime
   * Returns 2 if def prime, 1 if prob prime, 0 if def not prime
@@ -81,22 +79,18 @@ int main() {
      fprintf(stderr, "Bad write file: %s\n", "testing_RW_file");
      exit(EXIT_FAILURE);
   }
-
   /* mpz_out_str(file stream, base, #) */
   res = mpz_out_str(opened_file1, 2, rand_num);
   if (!res) {
     fprintf(stderr, "Couldn't write to file.\n");
     exit(EXIT_FAILURE);
   }
-
   opened_file2 = fopen("read_file","r");
   if (!opened_file2) {
      fprintf(stderr, "Bad read file: %s\n", "read_file");
      exit(EXIT_FAILURE);
   }
-
   mpz_init(rand_num3);
-
   /* NOTE: make sure the num in file is same base
    * as what you're trying to read. */
   res = mpz_inp_str(rand_num3, opened_file2, 10);
@@ -104,9 +98,7 @@ int main() {
     fprintf(stderr, "Couldn't read from file.\n");
     exit(EXIT_FAILURE);
   }
-
   gmp_printf("rand_num3 (after read): %Zd\n\n", rand_num3);
-
   fclose(opened_file1);
   fclose(opened_file2);
 
@@ -174,25 +166,22 @@ int main() {
 
    /* Task IV */
    printf("***Task 4***");
+   /* 1. key generation
+      2. encryption & decryption functions
+      Use a 1024-bit modulus and set e = 65537
+   */
+
 
 
    return 0;
 }
 
-static void generate_random_number(mpz_t *rand_num,
-                                               unsigned long int seed,
-                                               gmp_randstate_t *rand_state) {
-   printf("Generated \"random\" number:\n");
-   gmp_randinit_default (*rand_state);       /* Init rand_state */
-   gmp_randseed_ui(*rand_state, seed);       /* Init seed */
+static void generate_random_number(mpz_t *rand_num, unsigned long int seed) {
+   gmp_randstate_t rand_state;
+   gmp_randinit_default (rand_state);       /* Init rand_state */
+   gmp_randseed_ui(rand_state, seed);       /* Init seed */
    mpz_init(*rand_num);                      /* Init mpz (contains num) */
-
-   mpz_urandomb(*rand_num,*rand_state, 512); /* Generate random 512bit # */
-   gmp_printf("%Zd\n\n", *rand_num);
-
-  //  gmp_randclear(*rand_state);
-  //  mpz_clear(*rand_num);
-
+   mpz_urandomb(*rand_num, rand_state, 512); /* Generate random 512bit # */
 }
 
 static int gcd_small_ints(int num1, int num2){
@@ -211,3 +200,15 @@ static int gcd_small_ints(int num1, int num2){
   }
   return 1;
 }
+
+// static void random_prime(mpz_t *num){
+//
+//   while(1){
+//     //initialize num
+//     mpz_init(*num);
+//     //generate random number
+//     generate_random_number(num, );
+//     //if its prime, return
+//   }
+//
+// }
