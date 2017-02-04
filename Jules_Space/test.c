@@ -14,6 +14,7 @@
 #include <gmp.h>
 #include <stdarg.h>  /* For protos with va_list ie gmp_vprintf */
 #include <obstack.h> /* For struct obstack */
+#include <sys/time.h>
 /*
 const mpz_t n0 = 16586219440392868678950493674373228226755023453566380544778827468536293369070578005044103018679897826666988847478111125894645738617945022721399003187371315095776714268710828111900839935166040593805812450444207971154277250135488735224052767242108711688695472665535393219411816441863936671931207229988569378091;
 const mpz_t n1 = 40551717335634282796188595809907574636047497578447239742728984932123966624413413502767149538720812803461325270023373882379621912810451972080538881907407663962222269155722813641736702957601282436859549047516678171448999396597860674018511185283001161464214443896828880085703268792922456861374890446256379858691;
@@ -24,6 +25,9 @@ const mpz_t n5 = 298242883038306697836414703182744894466814559295555695062121225
 */
 static void generate_random_number(mpz_t *rand_num, unsigned long int seed);
 static int gcd_small_ints(int num1, int num2);
+static void random_prime(mpz_t *num);
+static unsigned long int get_nanos(void);
+
 
 int main() {
   unsigned long int seed, seed2;
@@ -170,8 +174,11 @@ int main() {
       2. encryption & decryption functions
       Use a 1024-bit modulus and set e = 65537
    */
-
-
+   mpz_t p, q;
+   random_prime(&p);
+   random_prime(&q);
+   gmp_printf("\nP: %Zd\n\n", p);
+   gmp_printf("\nQ: %Zd\n\n", q);
 
    return 0;
 }
@@ -201,14 +208,26 @@ static int gcd_small_ints(int num1, int num2){
   return 1;
 }
 
-// static void random_prime(mpz_t *num){
-//
-//   while(1){
-//     //initialize num
-//     mpz_init(*num);
-//     //generate random number
-//     generate_random_number(num, );
-//     //if its prime, return
-//   }
-//
-// }
+static void random_prime(mpz_t *num){
+  //unsigned long int seed = 123456;
+  unsigned long int nanos;
+
+  while(1){
+    //initialize num
+    nanos = get_nanos;
+    printf("nanos: %li",nanos);
+    mpz_init(*num);
+    //generate random number
+    generate_random_number(num, nanos);
+    //if its prime, return
+    if(mpz_probab_prime_p(*num, 30) > 0){
+      return;
+    }
+  }
+}
+
+static unsigned long int get_nanos(void){
+  struct timeval currentTime;
+  gettimeofday(&currentTime, NULL);
+  return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
+}

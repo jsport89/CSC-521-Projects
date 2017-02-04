@@ -1,7 +1,7 @@
 CC = gcc
 
 test:
-	$(CC) -Wall -Werror test.c -lgmp
+	$(CC) -Wall test.c -lgmp
 
 clean:
 	rm -f *.o a.out
