@@ -15,6 +15,7 @@
 #include <stdarg.h>  /* For protos with va_list ie gmp_vprintf */
 #include <obstack.h> /* For struct obstack */
 #include <time.h>
+#include <unistd.h>
 /*
 const mpz_t n0 = 16586219440392868678950493674373228226755023453566380544778827468536293369070578005044103018679897826666988847478111125894645738617945022721399003187371315095776714268710828111900839935166040593805812450444207971154277250135488735224052767242108711688695472665535393219411816441863936671931207229988569378091;
 const mpz_t n1 = 40551717335634282796188595809907574636047497578447239742728984932123966624413413502767149538720812803461325270023373882379621912810451972080538881907407663962222269155722813641736702957601282436859549047516678171448999396597860674018511185283001161464214443896828880085703268792922456861374890446256379858691;
@@ -173,6 +174,8 @@ int main() {
       Use a 1024-bit modulus and set e = 65537
    */
    mpz_t p, q;
+   mpz_init(p);
+   mpz_init(q);
    random_prime(&p);
    random_prime(&q);
    gmp_printf("\nP: %Zd\n\n", p);
@@ -207,18 +210,12 @@ static int gcd_small_ints(int num1, int num2){
 }
 
 static void random_prime(mpz_t *num){
-  printf("generating random prime:\n");
-  while(1){
-    //initialize num
-    srand(time(NULL));
-    mpz_init(*num);
-    //generate random number
-    generate_random_number(num, rand());
-    gmp_printf("Result: %Zd + ", num);
-    //if its prime, return
-    if(mpz_probab_prime_p(*num, 30) > 0){
-      printf("found prime\n");
-      return;
-    }
-  }
+  mpz_t random_number, prime;
+  mpz_init(random_number);
+  mpz_init(prime);
+  srand(time(NULL));
+  generate_random_number(&random_number, rand());
+  mpz_nextprime(prime, random_number);
+  mpz_set(*num, prime);
+  sleep(1);
 }
