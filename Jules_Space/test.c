@@ -1,12 +1,5 @@
 /*
- * test.c - Contains Task 1 of Project 1
- * 1. Generating a pseudo-random 512-bit integer
- * 2. Checking to see if that integer is (probabilistically) prime
- * 3. Printing large integers to stdout
- * 4. Reading & writing larger integers from/to disk
- * 5. Adding and subtracting two large integers
- * 6. Multiplying two large integers
- * 7. Performs modular exponentiation on large integers (i.e. ab mod c)
+ * test.c -
  */
 
 #include <stdio.h>
@@ -16,18 +9,19 @@
 #include <obstack.h> /* For struct obstack */
 #include <time.h>
 #include <unistd.h>
-/*
-const mpz_t n0 = 16586219440392868678950493674373228226755023453566380544778827468536293369070578005044103018679897826666988847478111125894645738617945022721399003187371315095776714268710828111900839935166040593805812450444207971154277250135488735224052767242108711688695472665535393219411816441863936671931207229988569378091;
-const mpz_t n1 = 40551717335634282796188595809907574636047497578447239742728984932123966624413413502767149538720812803461325270023373882379621912810451972080538881907407663962222269155722813641736702957601282436859549047516678171448999396597860674018511185283001161464214443896828880085703268792922456861374890446256379858691;
-const mpz_t n2 = 4584858127334481888956949636814087178936709594206799808830668511090245484755459879886892333675036017220400875215068783286641235741086763296223761930083971649736933265062126998568066740316971527362949091536302591669771961571588299188524997328196439934550567284781621727929881967179779863875897111578886729511;
-const mpz_t n3 = 1570766449183627979100442662913287727772274846158509712811172039635344158746614069049986886478456900415278603117372769010036993903189733563405201678779117407772760573607468969353204845625961421626699057281709281387675084326564182607013228649375460421593546978553700073337461128259564002885644923212654351738733;
-const mpz_t n4 = 20206959438259854707096595471756105531930316075003167441731682706437219837341080908001111386293866032342626326848774263655678734593467631039894350313079615694852898024651578877719067806299113646594515472905349384536141736001255892484345636015474986800809610322697749058964984183679288924809293079735255754321;
-const mpz_t n5 = 29824288303830669783641470318274489446681455929555569506212122576585040522591135570183377808244939609277778037167531249368105830574116003529097192484725011003242620065129581649476948641802290844900777295888790511736032138377077257780102810765337767474301386906507194607400736153806431242852566523065854979187;
-*/
+
+typedef struct RSA_instance {
+   mpz_t pub_key; /* P x Q */
+   mpz_t pub_exp; /* Public Exponent */
+   mpz_t priv_key; /* priv_key = pub_exp^(-1) mod λ(pub_key) */
+} RSA_instance;
+
 static void generate_random_number(mpz_t *rand_num, unsigned long int seed);
 static int gcd_small_ints(int num1, int num2);
 static void random_prime(mpz_t *num);
-
+static void generate_RSA_instance(RSA_instance *new_session);
+static void encrypt(mpz_t message, RSA_instance *cur_session, mpz_t *cipher);
+static void decrypt(mpz_t cipher, RSA_instance *cur_session, mpz_t *decrypted_message);
 int main() {
   unsigned long int seed, seed2;
   mpz_t rand_num, rand_num2, rand_num3;
@@ -173,15 +167,75 @@ int main() {
       2. encryption & decryption functions
       Use a 1024-bit modulus and set e = 65537
    */
-   mpz_t p, q;
-   mpz_init(p);
-   mpz_init(q);
-   random_prime(&p);
-   random_prime(&q);
-   gmp_printf("\nP: %Zd\n\n", p);
-   gmp_printf("\nQ: %Zd\n\n", q);
+
+   RSA_instance new_session;
+   generate_RSA_instance(&new_session);
+
+   mpz_t message, cipher, decrypted_message;
+   mpz_init_set_str(message, "1234", 10);
+   mpz_init(decrypted_message);
+   mpz_init(cipher);
+
+   gmp_printf("\nMessage: %Zd\n\n", message);
+
+   encrypt(message, &new_session, &cipher);
+
+   gmp_printf("\nAfter encrypt: %Zd\n\n", cipher);
+
+   decrypt(cipher, &new_session, &decrypted_message);
+
+   gmp_printf("\nAfter decrypt: %Zd\n\n", decrypted_message);
 
    return 0;
+}
+
+static void encrypt(mpz_t message, RSA_instance *cur_session, mpz_t *cipher) {
+  mpz_powm(*cipher, message, cur_session->pub_exp, cur_session->priv_key);
+}
+
+static void decrypt(mpz_t cipher, RSA_instance *cur_session, mpz_t *decrypted_message) {
+  mpz_powm(*decrypted_message, cipher, cur_session->priv_key, cur_session->pub_key);
+}
+
+static void generate_RSA_instance(RSA_instance *new_session) {
+  int result;
+  mpz_t p, q, lambda, p_min_one, q_min_one, gcd;
+  mpz_init(p);
+  mpz_init(q);
+  mpz_init(lambda);
+  mpz_init(p_min_one);
+  mpz_init(q_min_one);
+  mpz_init(gcd);
+  result = 0;
+
+  mpz_init(new_session->pub_key);
+  mpz_init(new_session->priv_key);
+  mpz_init_set_str(new_session->pub_exp, "65537", 10);
+
+  do {
+    random_prime(&p);                      // p
+    random_prime(&q);                      // q
+
+    mpz_sub_ui(p_min_one, p, 1);           // p - 1
+    mpz_sub_ui(q_min_one, q, 1);           // q - 1
+
+    mpz_lcm(lambda, p_min_one, q_min_one); // Lambda
+
+    mpz_gcd(gcd, new_session->pub_exp, lambda);
+    result = mpz_cmp_ui(gcd, 1);
+
+
+  } while (result != 0);                   // CHECK THIS CRAP
+
+  mpz_mul(new_session->pub_key, p, q);
+  result = mpz_invert(new_session->priv_key, new_session->pub_exp, lambda);
+  printf("\nmpz_invert result(want non-zero): %d\n", result);
+
+  gmp_printf("\np: %Zd\n\n", p);
+  gmp_printf("\nq: %Zd\n\n", q);
+  gmp_printf("\nlambda: %Zd\n\n", lambda);
+  gmp_printf("\np_min_one: %Zd\n\n", p_min_one);
+  gmp_printf("\nq-1: %Zd\n\n", q_min_one);
 }
 
 static void generate_random_number(mpz_t *rand_num, unsigned long int seed) {
