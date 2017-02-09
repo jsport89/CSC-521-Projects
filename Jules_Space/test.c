@@ -186,6 +186,40 @@ int main() {
 
    gmp_printf("\nAfter decrypt: %Zd\n\n", decrypted_message);
 
+// mpz_divexact (mpz_t q, const mpz_t n, const mpz_t d)
+
+   /* Task V */
+   /* n1's n */
+   RSA_instance n1_session, n4_session;
+   mpz_t p1, p4, p1_min_one, q_min_one, lambda, new_cipher, original_message;
+
+   mpz_init(n1_session.pub_key);
+   mpz_init(n1_session.pub_exp);
+   mpz_init(n1_session.priv_key);
+   mpz_init(p1);
+   mpz_init(p1_min_one);
+   mpz_init(q_min_one);
+   mpz_init(p4);
+   mpz_init(lambda);
+   mpz_init(original_message);
+   mpz_init_set_str(new_cipher,"21146360143304879584870745425454388339130123805805568677708774327812403952131165797204738467133149361047649013024046635077706337064012827612590921151908148059770846065742477880796909563967180928127867305091668302606535495924923769855539541035294698913180720693428844640760225771248139707088375991239007140103", 10);
+
+   mpz_set_str(n1_session.pub_exp, "65537", 10);
+   mpz_divexact(p1, n1, biggest_divisor);
+   mpz_set(n1_session.pub_key, n1);
+
+   mpz_sub_ui(p1_min_one, p1, 1);
+   mpz_sub_ui(q_min_one, biggest_divisor, 1);
+
+   mpz_lcm(lambda, p1_min_one, q_min_one);
+   mpz_invert(n1_session.priv_key, n1_session.pub_exp, lambda);
+
+   decrypt(new_cipher, &n1_session, &original_message);
+   gmp_printf("\noriginal_message: %Zd\n\n", original_message);
+   /* n4's n */
+
+
+
    return 0;
 }
 
