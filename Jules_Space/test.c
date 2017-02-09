@@ -190,10 +190,18 @@ int main() {
 }
 
 static void encrypt(mpz_t message, RSA_instance *cur_session, mpz_t *cipher) {
-  mpz_powm(*cipher, message, cur_session->pub_exp, cur_session->priv_key);
+  printf("\n In encrypt:\n");
+  gmp_printf("\nbase: %Zd\n\n", message);
+  gmp_printf("\nexp: %Zd\n\n", cur_session->pub_exp);
+  gmp_printf("\nto_mod_by: %Zd\n\n", cur_session->priv_key);
+  mpz_powm(*cipher, message, cur_session->pub_exp, cur_session->pub_key);
 }
 
 static void decrypt(mpz_t cipher, RSA_instance *cur_session, mpz_t *decrypted_message) {
+  printf("\n In decrypt:\n");
+  gmp_printf("\nbase: %Zd\n\n", cipher);
+  gmp_printf("\nexp: %Zd\n\n", cur_session->priv_key);
+  gmp_printf("\nto_mod_by: %Zd\n\n", cur_session->pub_key);
   mpz_powm(*decrypted_message, cipher, cur_session->priv_key, cur_session->pub_key);
 }
 
@@ -208,13 +216,17 @@ static void generate_RSA_instance(RSA_instance *new_session) {
   mpz_init(gcd);
   result = 0;
 
+  /* Testing */
+  mpz_init_set_str(p, "61", 10);
+  mpz_init_set_str(q, "53", 10);
+
   mpz_init(new_session->pub_key);
   mpz_init(new_session->priv_key);
   mpz_init_set_str(new_session->pub_exp, "65537", 10);
 
   do {
-    random_prime(&p);                      // p
-    random_prime(&q);                      // q
+    //random_prime(&p);                      // p
+    //random_prime(&q);                      // q
 
     mpz_sub_ui(p_min_one, p, 1);           // p - 1
     mpz_sub_ui(q_min_one, q, 1);           // q - 1
@@ -229,7 +241,11 @@ static void generate_RSA_instance(RSA_instance *new_session) {
 
   mpz_mul(new_session->pub_key, p, q);
   result = mpz_invert(new_session->priv_key, new_session->pub_exp, lambda);
-  printf("\nmpz_invert result(want non-zero): %d\n", result);
+
+  printf("\nIn generate instance. \nmpz_invert result(want non-zero): %d\n", result);
+  gmp_printf("\npub_key: %Zd\n\n", new_session->pub_key);
+  gmp_printf("\npub_exp: %Zd\n\n", new_session->pub_exp);
+  gmp_printf("\npriv_key: %Zd\n\n", new_session->priv_key);
 
   gmp_printf("\np: %Zd\n\n", p);
   gmp_printf("\nq: %Zd\n\n", q);
