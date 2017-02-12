@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>
-#include <stdarg.h>  /* For protos with va_list ie gmp_vprintf */
-#include <obstack.h> /* For struct obstack */
 #include <time.h>
 #include <unistd.h>
 
@@ -14,6 +12,7 @@ typedef struct RSA_instance {
    mpz_t pub_key; /* P x Q */
    mpz_t pub_exp; /* Public Exponent */
    mpz_t priv_key; /* priv_key = pub_exp^(-1) mod λ(pub_key) */
+
 } RSA_instance;
 
 static void generate_random_number(mpz_t *rand_num, unsigned long int seed);
@@ -22,15 +21,15 @@ static void random_prime(mpz_t *num);
 static void generate_RSA_instance(RSA_instance *new_session);
 static void encrypt(mpz_t message, RSA_instance *cur_session, mpz_t *cipher);
 static void decrypt(mpz_t cipher, RSA_instance *cur_session, mpz_t *decrypted_message);
+
 int main() {
   unsigned long int seed, seed2;
   mpz_t rand_num, rand_num2, rand_num3;
-  //  mpz_t rand_num2;
-  //  gmp_randstate_t rand_state2;
+
   seed = 654321;
   seed2 = 98765;
 
-/* Task I */
+  /* Task I */
   printf("***Task 1***\n\n");
 
   /*
@@ -160,6 +159,31 @@ int main() {
 
    val = mpz_probab_prime_p(biggest_divisor, 30);
    printf("Probabilistically prime?: %d\n\n", val);
+
+   /* Experiment with arrays */
+   int i, j, array_size;
+   array_size = 6;
+   mpz_t big_ints[array_size], another_big_div;
+
+
+   for (i = 0; i < array_size; i++)
+     mpz_init(big_ints[i]);
+
+   mpz_init(another_big_div);
+   mpz_set(big_ints[0], n0);
+   mpz_set(big_ints[1], n1);
+   mpz_set(big_ints[2], n2);
+   mpz_set(big_ints[3], n3);
+   mpz_set(big_ints[4], n4);
+   mpz_set(big_ints[5], n5);
+
+   for (i = 0; i < array_size; i++) {
+     for (j = i; j < array_size; j++) {
+       mpz_gcd(another_big_div, big_ints[i], big_ints[j]);
+       val = mpz_probab_prime_p(another_big_div, 30);
+       gmp_printf("\n#'s: %d and %d\nPrimeness: %d.\n\n", i, j, val);
+     }
+   }
 
    /* Task IV */
    printf("***Task 4***");
