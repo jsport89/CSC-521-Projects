@@ -21,6 +21,7 @@ static void random_prime(mpz_t *num);
 static void generate_RSA_instance(RSA_instance *new_session);
 static void encrypt(mpz_t message, RSA_instance *cur_session, mpz_t *cipher);
 static void decrypt(mpz_t cipher, RSA_instance *cur_session, mpz_t *decrypted_message);
+static int hex_to_ascii(char c, char d);
 
 int main() {
   unsigned long int seed, seed2;
@@ -243,8 +244,25 @@ int main() {
    /* n4's n */
 
 
+   //convert original message to hex then ascii
+      char buff [100];
+      char * big_num_as_hex_string;
+      big_num_as_hex_string = mpz_get_str(buff, 16, original_message);
+      char *p = big_num_as_hex_string;
+      while(*p != '\0'){
+        char first = *p++;
+        char second = *p++;
+        printf("%c", hex_to_ascii(first, second));
+      }
+      printf("\n");
 
    return 0;
+}
+
+static int hex_to_ascii(char c, char d){
+    char hex[5], *stop;
+    hex[0] = '0'; hex[1] = 'x'; hex[2] = c; hex[3] = d; hex[4] = 0;
+    return strtol(hex, &stop, 16);
 }
 
 static void encrypt(mpz_t message, RSA_instance *cur_session, mpz_t *cipher) {
