@@ -51,7 +51,6 @@ if __name__ == '__main__':
     core_count = multiprocessing.cpu_count()
 
     ## No parallelization
-
     start = time.time()
     result = gcds_on_keys(mpz_array, 0, 1)
     end = time.time()
