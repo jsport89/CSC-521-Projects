@@ -1,3 +1,0 @@
-- E assumed from task 4?
-- Trying to figure out p and q?
-- How is factoring and the RSA moduli related?
