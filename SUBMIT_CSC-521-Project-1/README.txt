@@ -3,7 +3,8 @@ Kyle Mulligan, Sam Rezaie, Jules Sulpico
 
 - Tasks I-V
   We used the GMP library in C to complete the 
-  follow tasks. 
+  following tasks.
+  
   run "make" to create executable. 
 
 - Task VI:
